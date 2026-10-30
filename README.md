@@ -28,17 +28,18 @@ that the hot path computes — without reimplementing the hot path in Python.
 
 ```mermaid
 flowchart LR
-  W[WebSocket / file / synthetic feed] -->|raw frames| Q[(bounded SPSC ring<br/>Block or Drop)]
-  Q --> P[FeedParser<br/>Binance JSON | CSV | your venue]
-  P -->|DeltaView: ids, exchange ts, level updates| S{sequence check<br/>stale / gap / crossed / oversize}
-  S -->|contiguous| B[OrderBook<br/>flat sorted vectors,<br/>optional depth cap]
-  S -->|gap| R[invalidate book,<br/>flag windows,<br/>request snapshot]
+  W["WebSocket / file / synthetic feed"] -->|raw frames| Q[("bounded SPSC ring<br/>Block or Drop")]
+  Q --> P["FeedParser<br/>Binance JSON / CSV / your venue"]
+  P -->|DeltaView: ids, exchange ts, level updates| S{"sequence check<br/>stale / gap / crossed / oversize"}
+  S -->|contiguous| B["OrderBook<br/>flat sorted vectors,<br/>optional depth cap"]
+  S -->|gap| R["invalidate book,<br/>flag windows,<br/>request snapshot"]
   R -->|snapshot| B
-  B --> F[FeatureEngine<br/>OFI, micro-price, depth imbalance,<br/>rolling realised vol Welford,<br/>event-time bars]
-  F -->|Features row per update| PY[pybind11 -> numpy / pandas]
-  F -->|bar: log RV, OFI stat| D1[Detector: vol channel]
-  F -->|bar| D2[Detector: flow channel]
-  D1 & D2 -->|score, alarm| PY
+  B --> F["FeatureEngine<br/>OFI, micro-price, depth imbalance,<br/>rolling realised vol Welford,<br/>event-time bars"]
+  F -->|Features row per update| PY["pybind11 -> numpy / pandas"]
+  F -->|bar: log RV, OFI stat| D1["Detector: vol channel"]
+  F -->|bar| D2["Detector: flow channel"]
+  D1 -->|score, alarm| PY
+  D2 -->|score, alarm| PY
 ```
 
 ```
